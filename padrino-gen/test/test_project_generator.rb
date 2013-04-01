@@ -62,6 +62,16 @@ describe "ProjectGenerator" do
       assert_file_exists("#{@apptmp}/sample_project/public/favicon.ico")
     end
 
+    should "add database's tasks to Rakefile if an ORM is defined" do
+      capture_io { generate(:project, 'sample_project', "--root=#{@apptmp}", '--app=base_app', '--orm=activerecord') }
+      assert_match_in_file('PadrinoTasks.use(:database)',"#{@apptmp}/sample_project/Rakefile")
+    end
+
+    should "avoid add database's tasks on Rakefile if no ORM is specified" do
+      capture_io { generate(:project, 'sample_project', "--root=#{@apptmp}", '--app=base_app') }
+      assert_no_match_in_file('PadrinoTasks.use(:database)',"#{@apptmp}/sample_project/Rakefile")
+    end
+
     should "generate tiny skeleton" do
       capture_io { generate(:project,'sample_project', '--tiny',"--root=#{@apptmp}") }
       assert_file_exists("#{@apptmp}/sample_project")
@@ -166,7 +176,7 @@ describe "ProjectGenerator" do
       out, err = capture_io { generate(:project, 'sample_project', "--root=#{@apptmp}", '--mock=rr', '--test=bacon', '--script=none') }
       assert_match(/applying.*?rr.*?mock/, out)
       assert_match_in_file(/gem 'rr'/, "#{@apptmp}/sample_project/Gemfile")
-      assert_match_in_file(/include RR::Adapters::RRMethods/m, "#{@apptmp}/sample_project/test/test_config.rb")
+      assert_match_in_file(/include RR::Adapters::TestUnit/m, "#{@apptmp}/sample_project/test/test_config.rb")
     end
 
     should "properly generate for rr and rspec" do
